@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 체육으로 떠나는 탐구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#181c22;
+    --charcoal-2:#21262e;
+    --charcoal-3:#11141a;
+    --line:#343c46;
+    --chalk:#f3efe4;
+    --chalk-dim:#b9bcc4;
+    --clay:#c1440e;
+    --clay-bright:#ef6a35;
+    --green:#3f7a4e;
+    --green-bright:#7fce8e;
+    --yellow:#f4b942;
+    --easy:#7fce8e;
+    --mid:#f4b942;
+    --hard:#ef6a35;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans KR', sans-serif;
+    background:var(--charcoal);
+    color:var(--chalk);
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Track lane background ---------- */
+  .lane-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      repeating-linear-gradient(115deg,
+        rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 2px,
+        transparent 2px, transparent 64px),
+      linear-gradient(160deg, var(--charcoal-3) 0%, var(--charcoal) 55%, var(--charcoal-2) 100%);
+  }
+  .track-curve{
+    position:absolute; border-radius:50%; border-style:solid; opacity:.18;
+  }
+  .track-curve.c1{ width:900px; height:900px; right:-360px; top:-360px; border-width:46px; border-color:var(--clay-bright); }
+  .track-curve.c2{ width:1180px; height:1180px; right:-490px; top:-490px; border-width:30px; border-color:var(--yellow); }
+  .track-curve.c3{ width:520px; height:520px; left:-260px; bottom:-220px; border-width:40px; border-color:var(--green-bright); }
+
+  /* ---------- Top actions ---------- */
+  .top-actions{
+    position:fixed; top:14px; right:14px; z-index:60;
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    max-width:calc(100vw - 28px);
+  }
+  .top-btn{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.06em;
+    color:var(--charcoal-3); background:var(--yellow);
+    border:1px solid var(--chalk); border-radius:99px;
+    padding:9px 16px; cursor:pointer;
+    box-shadow:0 6px 16px -6px rgba(0,0,0,.6);
+    transition:transform .2s var(--ease), background .2s var(--ease);
+    white-space:nowrap;
+  }
+  .top-btn.alt{ background:var(--green-bright); }
+  .top-btn:hover{ transform:translateY(-2px); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; z-index:1;
+    max-width:1100px; margin:0 auto; padding:64px 24px 28px;
+    text-align:center;
+  }
+  .hero h1{
+    font-family:'Anton', sans-serif;
+    font-size:clamp(34px, 7vw, 64px);
+    letter-spacing:.04em;
+    margin:0;
+    color:var(--chalk);
+    text-shadow:0 0 0 transparent;
+  }
+  .hero h1 .accent{ color:var(--clay-bright); }
+  .finish-line{
+    width:min(420px, 80%); height:10px; margin:14px auto 18px;
+    background:repeating-linear-gradient(90deg, var(--chalk) 0 14px, var(--charcoal-3) 14px 28px);
+    border-radius:3px;
+  }
+  .signature{
+    font-family:'Caveat', cursive; font-weight:700; font-size:26px;
+    background:linear-gradient(90deg, var(--chalk-dim), var(--yellow), var(--green-bright), var(--chalk-dim));
+    background-size:300% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shine 6s linear infinite;
+    margin:0 0 6px;
+  }
+  @keyframes shine{
+    0%{background-position:0% 50%;}
+    100%{background-position:300% 50%;}
+  }
+  .hero p.lead{
+    color:var(--chalk-dim); font-size:15px; line-height:1.7;
+    max-width:680px; margin:10px auto 0;
+  }
+
+  /* ---------- Legend ---------- */
+  .legend{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    margin:22px auto 0; max-width:760px;
+  }
+  .legend-pill{
+    display:flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono', monospace; font-size:12px;
+    border:1px solid var(--line); border-radius:99px; padding:7px 14px;
+    background:rgba(255,255,255,.02);
+  }
+  .legend-dot{ width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+  .legend-dot.easy{ background:var(--easy); }
+  .legend-dot.mid{ background:var(--mid); }
+  .legend-dot.hard{ background:var(--hard); }
+
+  /* ---------- Grid / Cards ---------- */
+  main{ position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+  .grid{
+    display:grid; gap:28px;
+    grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+  }
+  .card{
+    background:var(--charcoal-2); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden;
+    display:flex; flex-direction:column;
+    box-shadow:0 14px 32px -18px rgba(0,0,0,.7);
+    transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .card:hover{ transform:translateY(-4px); box-shadow:0 20px 40px -16px rgba(0,0,0,.8); }
+
+  .card-media{ position:relative; aspect-ratio:4/3; background:var(--charcoal-3); }
+  .card-img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .card-img.hidden{ display:none; }
+  .img-fallback{
+    position:absolute; inset:0; display:none;
+    flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    padding:18px; gap:6px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.04), transparent 60%),
+      var(--charcoal-3);
+    border:1px solid var(--line); border-radius:8px; margin:10px;
+    inset:10px;
+  }
+  .img-fallback.show{ display:flex; }
+  .img-fallback .ico{ font-size:30px; }
+  .img-fallback .ft{ font-family:'Anton', sans-serif; letter-spacing:.04em; font-size:15px; color:var(--chalk); }
+  .img-fallback .fs{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--chalk-dim); }
+
+  .lane-badge{
+    position:absolute; top:10px; left:10px; z-index:2;
+    font-family:'JetBrains Mono', monospace; font-weight:600; font-size:12px;
+    color:var(--charcoal-3); background:var(--yellow);
+    padding:4px 10px; border-radius:99px; letter-spacing:.08em;
+  }
+
+  .card-body{ padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; }
+  .card-body h3{ font-family:'Anton', sans-serif; font-size:20px; letter-spacing:.02em; margin:0; }
+  .card-body .meta{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--chalk-dim); margin:0; }
+  .card-body .desc{ font-size:13.5px; line-height:1.6; color:var(--chalk-dim); margin:0 0 4px; }
+
+  .levels{ display:flex; flex-direction:column; gap:12px; }
+  .level{
+    border-left:4px solid var(--line); border-radius:8px;
+    background:rgba(255,255,255,.025); padding:12px 14px;
+  }
+  .level.level-easy{ border-left-color:var(--easy); }
+  .level.level-mid{ border-left-color:var(--mid); }
+  .level.level-hard{ border-left-color:var(--hard); }
+
+  .level-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+  .level-tag{
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    padding:2px 9px; border-radius:99px; color:var(--charcoal-3);
+  }
+  .level-easy .level-tag{ background:var(--easy); }
+  .level-mid .level-tag{ background:var(--mid); }
+  .level-hard .level-tag{ background:var(--hard); }
+  .subject-badge{
+    font-size:11.5px; font-weight:700; color:var(--chalk);
+    border:1px solid var(--line); border-radius:99px; padding:2px 10px;
+  }
+  .level .q{ font-size:14px; line-height:1.65; margin:0 0 10px; }
+
+  .curri{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .curri-item{
+    font-size:11.5px; line-height:1.5; color:var(--chalk-dim);
+    border:1px dashed var(--line); border-radius:6px; padding:6px 9px;
+  }
+  .curri-item b{ color:var(--chalk); font-family:'JetBrains Mono', monospace; font-size:11px; margin-right:4px; }
+
+  .start-btn{
+    width:100%; font-family:'Noto Sans KR', sans-serif; font-weight:700; font-size:13px;
+    background:transparent; color:var(--chalk); border:1px solid var(--line);
+    border-radius:8px; padding:9px 12px; cursor:pointer;
+    transition:background .2s var(--ease), border-color .2s var(--ease);
+  }
+  .level-easy .start-btn:hover{ background:var(--easy); color:var(--charcoal-3); border-color:var(--easy); }
+  .level-mid .start-btn:hover{ background:var(--mid); color:var(--charcoal-3); border-color:var(--mid); }
+  .level-hard .start-btn:hover{ background:var(--hard); color:var(--charcoal-3); border-color:var(--hard); }
+
+  /* ---------- Gallery (overview) ---------- */
+  .hidden{ display:none !important; }
+  .gallery-grid{
+    display:grid; gap:22px;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .gcard{
+    background:var(--charcoal-2); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; cursor:pointer;
+    display:flex; flex-direction:column;
+    box-shadow:0 14px 32px -18px rgba(0,0,0,.7);
+    transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+  }
+  .gcard:hover{ transform:translateY(-4px); box-shadow:0 20px 40px -16px rgba(0,0,0,.8); border-color:var(--yellow); }
+  .gcard .card-media{ aspect-ratio:4/3; }
+  .gcard-body{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .gcard-body h3{ font-family:'Anton', sans-serif; font-size:16px; letter-spacing:.02em; margin:0; line-height:1.3; }
+  .gcard-body .meta{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--chalk-dim); margin:0; }
+  .subject-row{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .subject-chip{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px;
+    color:var(--charcoal-3);
+  }
+  .subject-chip.chip-easy{ background:var(--easy); }
+  .subject-chip.chip-mid{ background:var(--mid); }
+  .subject-chip.chip-hard{ background:var(--hard); }
+
+  .icon-media{
+    display:flex; align-items:center; justify-content:center;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.04), transparent 60%),
+      var(--charcoal-3);
+  }
+  .picto{ width:52%; height:52%; color:var(--chalk-dim); }
+
+  /* ---------- Detail view ---------- */
+  .back-btn{
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
+    background:transparent; color:var(--chalk); border:1px solid var(--line);
+    border-radius:99px; padding:9px 18px; cursor:pointer; margin-bottom:20px;
+    transition:background .2s var(--ease), border-color .2s var(--ease);
+  }
+  .back-btn:hover{ background:var(--yellow); color:var(--charcoal-3); border-color:var(--yellow); }
+  #detailCard .card{ max-width:720px; margin:0 auto; }
+  #detailCard .card:hover{ transform:none; }
+
+  /* ---------- Footer ---------- */
+  footer.note{
+    position:relative; z-index:1; max-width:900px; margin:0 auto 60px; padding:0 20px;
+    font-size:12.5px; line-height:1.8; color:var(--chalk-dim);
+  }
+  footer.note h4{ color:var(--chalk); font-size:14px; margin:22px 0 6px; }
+  footer.note .box{
+    border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:14px;
+    background:rgba(255,255,255,.02);
+  }
+
+  /* ---------- Modals ---------- */
+  .modal{
+    position:fixed; inset:0; z-index:100; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(10,12,16,.72); padding:20px;
+  }
+  .modal.active{ display:flex; }
+  .modal-content{
+    background:var(--charcoal-2); border:1px solid var(--line); border-radius:14px;
+    max-width:680px; width:100%; max-height:88vh; overflow:auto;
+    padding:26px 26px 20px; position:relative;
+  }
+  .modal-content h2{ font-family:'Anton', sans-serif; letter-spacing:.02em; margin:0 0 4px; font-size:24px; }
+  .modal-close{
+    position:absolute; top:14px; right:14px; background:transparent; border:none;
+    color:var(--chalk-dim); font-size:22px; cursor:pointer; line-height:1;
+  }
+  .modal-close:hover{ color:var(--chalk); }
+
+  .ws-meta{ font-size:12.5px; color:var(--chalk-dim); margin-bottom:14px; font-family:'JetBrains Mono', monospace; }
+  .ws-q{
+    font-size:14px; line-height:1.6; border:1px dashed var(--line); border-radius:8px;
+    padding:12px 14px; margin-bottom:16px; background:rgba(255,255,255,.02);
+  }
+  .field{ margin-bottom:14px; display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:12.5px; font-weight:700; color:var(--chalk); }
+  .field input, .field textarea{
+    font-family:'Noto Sans KR', sans-serif; font-size:13.5px; color:var(--chalk);
+    background:var(--charcoal-3); border:1px solid var(--line); border-radius:8px;
+    padding:10px 12px; resize:vertical; min-height:44px;
+  }
+  .field input{ min-height:auto; }
+  .field input:focus, .field textarea:focus{ outline:2px solid var(--yellow); }
+
+  .ws-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .ws-actions button{
+    flex:1; min-width:110px; font-family:'JetBrains Mono', monospace; font-size:12.5px; font-weight:600;
+    border:1px solid var(--line); border-radius:8px; padding:10px 12px; cursor:pointer;
+    background:transparent; color:var(--chalk); transition:background .2s var(--ease);
+  }
+  .ws-actions button.primary{ background:var(--green-bright); color:var(--charcoal-3); border-color:var(--green-bright); }
+  .ws-actions button.warn{ background:var(--clay-bright); color:var(--charcoal-3); border-color:var(--clay-bright); }
+  .ws-actions button:hover{ filter:brightness(1.1); }
+
+  /* saved list */
+  .saved-item{
+    border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .saved-item .si-top{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; align-items:center; }
+  .saved-item .si-title{ font-weight:700; font-size:13.5px; }
+  .saved-item .si-tag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--chalk-dim); }
+  .saved-item .si-q{ font-size:12.5px; color:var(--chalk-dim); line-height:1.5; }
+  .saved-item .si-actions{ display:flex; gap:6px; }
+  .saved-item .si-actions button{
+    font-family:'JetBrains Mono', monospace; font-size:11px; border:1px solid var(--line);
+    background:transparent; color:var(--chalk); border-radius:6px; padding:6px 10px; cursor:pointer;
+  }
+  .empty-msg{ color:var(--chalk-dim); font-size:13px; text-align:center; padding:30px 0; }
+
+  /* teacher guide */
+  .guide h3{ font-size:15px; margin:18px 0 6px; color:var(--chalk); }
+  .guide p, .guide li{ font-size:13px; line-height:1.75; color:var(--chalk-dim); }
+  .guide ol, .guide ul{ padding-left:20px; margin:6px 0; }
+
+  /* presentation */
+  .present{
+    position:fixed; inset:0; z-index:200; display:none;
+    background:var(--charcoal-3); color:var(--chalk);
+    flex-direction:column;
+  }
+  .present.active{ display:flex; }
+  .present-top{ display:flex; justify-content:space-between; align-items:center; padding:14px 20px; }
+  .present-top .pt-title{ font-family:'Anton', sans-serif; font-size:16px; letter-spacing:.04em; }
+  .present-close{ background:transparent; border:1px solid var(--line); color:var(--chalk); border-radius:8px; padding:6px 12px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .present-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:20px; text-align:center; }
+  .present-slide{ max-width:760px; }
+  .present-slide .ps-label{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.1em; color:var(--yellow);
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .present-slide .ps-text{ font-size:clamp(18px,3.4vw,30px); line-height:1.6; font-weight:700; }
+  .present-nav{ display:flex; justify-content:center; gap:14px; padding:18px; }
+  .present-nav button{
+    background:transparent; border:1px solid var(--line); color:var(--chalk);
+    border-radius:99px; padding:10px 22px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:13px;
+  }
+  .present-dots{ display:flex; justify-content:center; gap:6px; padding-bottom:18px; }
+  .present-dots span{ width:8px; height:8px; border-radius:50%; background:var(--line); }
+  .present-dots span.on{ background:var(--yellow); }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #worksheetModal, #worksheetModal *{ visibility:visible; }
+    #worksheetModal{ position:absolute; inset:0; background:#fff; color:#000; }
+    .modal-content{ background:#fff; color:#000; border:none; box-shadow:none; max-width:100%; }
+    .ws-actions, .modal-close, .top-actions{ display:none !important; }
+    .field input, .field textarea, .ws-q, .curri-item{ color:#000; border-color:#999; background:#fff; }
+  }
+
+  @media (max-width:540px){
+    .hero{ padding-top:48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lane-bg">
+  <div class="track-curve c1"></div>
+  <div class="track-curve c2"></div>
+  <div class="track-curve c3"></div>
+</div>
+
+<div class="top-actions">
+  <button class="top-btn alt" onclick="openModal('savedModal'); renderSavedList();">📋 나의 탐구 목록</button>
+  <button class="top-btn" onclick="openModal('guideModal')">🏁 선생님 안내</button>
+</div>
+
+<header class="hero">
+  <h1>모두의 <span class="accent">체육</span>으로 떠나는 탐구</h1>
+  <div class="finish-line"></div>
+  <p class="signature">Copyright@All Teachers</p>
+  <p class="lead">
+    체육(스포츠) 장면 하나를 출발선으로 삼아, 같은 동작·같은 장면을 수학·과학·사회 등 다른 교과의 눈으로 다시 바라봅니다.
+    아래에서 그림과 관련 교과를 먼저 둘러본 뒤, 마음에 드는 장면을 <b>클릭</b>하면 <b>쉬움(체육)</b> → <b>중간</b> → <b>어려움</b>
+    세 단계의 탐구 질문과 2022개정 / 2015개정 교육과정 성취기준 영역을 볼 수 있습니다.
+  </p>
+  <div class="legend">
+    <span class="legend-pill"><span class="legend-dot easy"></span>쉬움 — 체육(동작·신체)</span>
+    <span class="legend-pill"><span class="legend-dot mid"></span>중간 — 수학·과학적 분석</span>
+    <span class="legend-pill"><span class="legend-dot hard"></span>어려움 — 사회·역사·윤리적 확장</span>
+  </div>
+</header>
+
+<main>
+  <div id="galleryView">
+    <div id="grid" class="gallery-grid"></div>
+  </div>
+  <div id="detailView" class="hidden">
+    <button class="back-btn" onclick="showGallery()">← 목록으로</button>
+    <div id="detailCard"></div>
+  </div>
+</main>
+
+<footer class="note">
+  <h4>이 자료에 대하여</h4>
+  <p>
+    각 카드는 체육(스포츠) 장면을 출발점으로, 같은 장면을 수학·과학·사회 등 다른 교과의 관점으로 확장한 탐구 질문 3개를 제시합니다.
+    질문 아래 "이 질문으로 탐구 시작" 버튼을 누르면 가설 → 탐구 방법 → 조사 내용 → 결론의 4단계 활동지가 열리고,
+    저장·인쇄·발표 화면 보기가 가능합니다. 학생의 세부능력 및 특기사항(세특) 작성 시 출발점 참고 자료로 활용할 수 있습니다.
+  </p>
+  <h4>이미지·저작권 안내</h4>
+  <p>
+    대부분의 이미지는 위키미디어 커먼즈의 퍼블릭도메인/자유이용 명화를 불러옵니다. 이미지를 불러오지 못하면 작품 제목이 적힌 카드 형태로 자동 대체됩니다.
+    펜싱·배구·탁구·태권도·유도는 적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램(원본 일러스트)을 사용했습니다.
+  </p>
+  <div class="box">
+    <strong>※ 성취기준 표기 안내</strong><br>
+    본 자료에 표시된 교육과정 성취기준은 해당 단원·영역을 안내하는 참고 자료입니다.
+    정확한 성취기준 코드와 문구는 각 학교의 교육과정 재구성안 및 교육부 고시 원문을 통해 다시 확인한 뒤 생활기록부 등 공식 문서에 활용하시기 바랍니다.
+  </div>
+</footer>
+
+<!-- Worksheet Modal -->
+<div class="modal" id="worksheetModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('worksheetModal')">✕</button>
+    <h2 id="wsTitle">탐구 활동지</h2>
+    <div class="ws-meta" id="wsMeta"></div>
+    <div class="ws-q" id="wsQuestion"></div>
+
+    <div class="field">
+      <label>이름 / 모둠</label>
+      <input type="text" id="wsName" placeholder="예: 2학년 3반 12번 / 모둠 A">
+    </div>
+    <div class="field">
+      <label>① 가설 — 이 질문에 대한 나의 예상</label>
+      <textarea id="wsHypothesis" placeholder="이 장면을 보고 떠올린 나만의 예상을 적어보세요."></textarea>
+    </div>
+    <div class="field">
+      <label>② 탐구 방법 — 무엇을, 어떻게 조사·실험할까?</label>
+      <textarea id="wsMethod" placeholder="실측, 자료 조사, 영상 분석, 그래프 작성, 실험 등 구체적인 방법"></textarea>
+    </div>
+    <div class="field">
+      <label>③ 조사 내용 — 자료·계산·실험 결과</label>
+      <textarea id="wsResearch" placeholder="찾은 자료, 계산 과정, 측정값, 그래프 설명 등"></textarea>
+    </div>
+    <div class="field">
+      <label>④ 결론 및 정리</label>
+      <textarea id="wsConclusion" placeholder="가설과 비교한 결론, 새롭게 알게 된 점"></textarea>
+    </div>
+    <div class="field">
+      <label>⑤ 더 궁금한 점 / 다음 탐구 주제</label>
+      <textarea id="wsExtra" placeholder="이 탐구를 통해 새롭게 생긴 질문"></textarea>
+    </div>
+
+    <div class="ws-actions">
+      <button class="primary" onclick="saveWorksheet()">💾 저장하기</button>
+      <button onclick="window.print()">🖨️ 인쇄하기</button>
+      <button onclick="openPresent()">🎤 발표 화면 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Saved List Modal -->
+<div class="modal" id="savedModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('savedModal')">✕</button>
+    <h2>나의 탐구 목록</h2>
+    <p style="font-size:12.5px;color:var(--chalk-dim);margin-top:0;">이 브라우저에 저장된 탐구 활동지 목록입니다. (다른 기기/브라우저에서는 보이지 않습니다)</p>
+    <div id="savedList"></div>
+  </div>
+</div>
+
+<!-- Teacher Guide Modal -->
+<div class="modal" id="guideModal">
+  <div class="modal-content guide">
+    <button class="modal-close" onclick="closeModal('guideModal')">✕</button>
+    <h2>선생님 안내</h2>
+    <h3>1. 이 자료의 구조</h3>
+    <p>
+      체육(스포츠) 장면 30개를 출발선으로 삼아, 각 장면마다 <b>쉬움(체육 — 동작·신체 관찰)</b>,
+      <b>중간(수학·과학적 분석)</b>, <b>어려움(사회·역사·예술·윤리적 확장)</b> 세 단계의 탐구 질문을 제공합니다.
+      처음 화면(목록)에는 그림·작품 정보·관련 교과만 표시되며, 카드를 클릭하면 세 단계 질문과 활동지가 있는 상세 화면으로 이동합니다.
+      모든 카드는 체육에서 출발해 다른 교과로 확장되는 구조여서, 체육 수업·창의적 체험활동·교과 융합 수업 어디서나 활용할 수 있습니다.
+    </p>
+    <h3>2. 차시 운영 아이디어</h3>
+    <ol>
+      <li><b>1차시</b> — 장면 관찰 및 모둠별 관심 카드 선택, 쉬움(체육) 질문에 대한 토의</li>
+      <li><b>2차시</b> — 중간(수학·과학) 질문 선택, 실측·자료조사·계산 등 탐구 방법 설계</li>
+      <li><b>3차시</b> — 조사 및 활동지 작성(가설→방법→결과→결론)</li>
+      <li><b>4차시</b> — 발표 화면으로 모둠별 발표 및 상호 피드백</li>
+    </ol>
+    <h3>3. 활동지·저장 기능</h3>
+    <p>
+      "이 질문으로 탐구 시작" 버튼을 누르면 활동지가 열립니다. <b>저장하기</b>를 누르면 이 브라우저(localStorage)에 보관되어
+      "나의 탐구 목록"에서 다시 불러올 수 있습니다. <b>인쇄하기</b>는 활동지만 출력하며, <b>발표 화면 보기</b>는 작성한 내용을
+      슬라이드 형태로 띄워 발표용으로 사용할 수 있습니다.
+    </p>
+    <h3>4. 배포 방법</h3>
+    <p>
+      이 파일은 단일 HTML 파일입니다. GitHub 저장소에 <code>index.html</code>로 올리고 GitHub Pages를 켜면 링크 하나로 공유할 수 있습니다.
+      장면, 질문, 교육과정 정보를 바꾸고 싶다면 파일 안의 <code>DATA</code> 배열을 직접 수정하면 됩니다.
+    </p>
+    <h3>5. 성취기준 표기 안내</h3>
+    <p>
+      표시된 2022개정 / 2015개정 성취기준 영역은 참고용 안내입니다. 정확한 코드와 문구는 학교 교육과정 재구성안 및 교육부 고시 원문으로
+      다시 확인한 뒤 생활기록부 등 공식 문서에 활용해 주세요.
+    </p>
+  </div>
+</div>
+
+<!-- Presentation -->
+<div class="present" id="presentView">
+  <div class="present-top">
+    <span class="pt-title" id="ptTitle">발표 화면</span>
+    <button class="present-close" onclick="closePresent()">닫기 ✕</button>
+  </div>
+  <div class="present-body">
+    <div class="present-slide">
+      <div class="ps-label" id="psLabel"></div>
+      <div class="ps-text" id="psText"></div>
+    </div>
+  </div>
+  <div class="present-dots" id="psDots"></div>
+  <div class="present-nav">
+    <button onclick="presentStep(-1)">← 이전</button>
+    <button onclick="presentStep(1)">다음 →</button>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    title:"원반 던지는 사람 (디스코볼로스)",
+    maker:"미론 (로마 시대 모작)",
+    year:"기원전 460년경",
+    file:"Discobolus in National Roman Museum Palazzo Massimo alle Terme.JPG",
+    desc:"고대 그리스 조각가 미론의 작품을 로마 시대에 복제한 조각상으로, 선수가 원반을 던지기 직전 몸을 최대로 비튼 순간을 포착했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"조각상은 원반을 던지기 직전, 몸을 최대로 비튼 자세로 멈춰 있다. 이렇게 몸을 비틀었다가 풀어내는 동작은 어떤 효과를 낼까? 동작에 관여하는 신체 부위와 순서를 분석해보자.",
+       curr22:{subject:"체육", area:"신체활동 — 도전 영역, 던지기 동작의 운동 원리"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리와 분석"}},
+      {level:"중간", subject:"수학",
+       q:"원반이 손을 떠난 뒤에는 포물선 경로를 그린다. 던지는 속도가 같다면, 어떤 각도로 던질 때 가장 멀리 날아갈까? 사거리를 각도의 함수로 나타내보자.",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 이차함수와 포물선 운동의 표현"},
+       curr15:{subject:"수학", area:"도형의 방정식 — 이차함수와 운동의 표현"}},
+      {level:"어려움", subject:"세계사",
+       q:"원반던지기는 고대 올림픽 5종경기의 핵심 종목이었고, 이 조각상은 오랫동안 '이상적인 신체'의 상징처럼 여겨져 왔다. 특정 신체 능력을 '이상적'이라고 여기는 기준은 시대와 사회에 따라 어떻게 달라졌을까?",
+       curr22:{subject:"세계사", area:"고대 지중해 세계 — 그리스의 신체관과 올림픽 정신"},
+       curr15:{subject:"통합사회", area:"문화와 다양성 — 신체에 대한 사회적 인식 변화"}}
+    ]
+  },
+  {
+    title:"싱글 스컬을 탄 맥스 슈미트",
+    maker:"토머스 에이킨스",
+    year:"1871",
+    file:"Max Schmitt in a Single Scull.jpg",
+    desc:"필라델피아의 스쿨킬 강에서 1인승 조정 보트 경기를 마친 선수의 모습을 사실적으로 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"노를 젓는 동작은 다리 → 허리 → 팔로 힘이 이어지는 '신체 사슬' 운동이다. 만약 팔의 힘만으로 노를 젓는다면 어떤 문제가 생길까? 각 신체 부위가 만드는 힘을 비교해보자.",
+       curr22:{subject:"체육", area:"신체활동 — 동작 분석과 사용 근육"},
+       curr15:{subject:"체육", area:"운동 기술의 이해"}},
+      {level:"중간", subject:"수학",
+       q:"보트는 한 번 노를 저을 때마다 속도가 빨라지고, 다음 동작 전까지 점점 느려진다. 시간에 따른 속도를 그래프로 그리면 어떤 모양이 될까? 평균 속력과 순간 속력은 어떻게 다를까?",
+       curr22:{subject:"공통수학1", area:"함수 — 속력·시간 그래프와 평균변화율"},
+       curr15:{subject:"수학", area:"함수와 그래프"}},
+      {level:"어려움", subject:"과학",
+       q:"1인승 조정 보트(싱글 스컬)는 길고 좁은 모양이다. 보트의 모양과 물의 저항(항력)은 어떤 관계가 있을까? 폭을 줄이면 왜 더 빨라질까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 유체저항과 물체의 운동"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}}
+    ]
+  },
+  {
+    title:"발레 수업",
+    maker:"에드가 드가",
+    year:"1874",
+    file:"Edgar Degas The Dance Class.jpg",
+    desc:"발레 수업을 받는 어린 무용수들과 이를 지도하는 발레 마스터의 모습을 한 장면에 담은 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"무용수들은 한쪽 다리로 서서 균형을 잡거나 다리를 높이 들어 올리는 자세를 취하고 있다. 이런 균형 자세를 오래 유지하려면 어떤 신체 능력(평형성, 코어 근력 등)이 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 균형과 자세의 운동 원리"},
+       curr15:{subject:"체육", area:"건강과 체력 — 자세와 균형"}},
+      {level:"중간", subject:"과학",
+       q:"발레의 회전 동작(피루엣)은 제자리에서 여러 바퀴를 도는 동작이다. 팔다리를 몸에 모으거나 펼 때 회전 속도는 어떻게 달라질까? 각운동량의 관점에서 설명해보자.",
+       curr22:{subject:"물리학Ⅱ", area:"역학과 에너지 — 각운동량 보존"},
+       curr15:{subject:"물리학Ⅱ", area:"역학적 상호작용 — 회전 운동"}},
+      {level:"어려움", subject:"음악",
+       q:"발레는 음악의 박자에 맞춰 동작의 시작과 끝을 정확히 맞춘다. 박자(리듬)를 수치로 나타낸다면, 무용수의 동작 타이밍을 어떻게 설계할 수 있을까?",
+       curr22:{subject:"음악", area:"음악과 신체 표현 — 박자와 동작의 관계"},
+       curr15:{subject:"음악", area:"음악과 다른 예술의 연계"}}
+    ]
+  },
+  {
+    title:"눈 속의 사냥꾼들",
+    maker:"피터 브뤼헐",
+    year:"1565",
+    file:"Pieter Bruegel the Elder - Hunters in the Snow (Winter) - Google Art Project.jpg",
+    desc:"눈 덮인 마을과 얼어붙은 연못에서 빙상 놀이를 하는 사람들의 모습을 함께 그린 겨울 풍경화입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"마을 사람들이 얼어붙은 연못 위에서 빙상 활동을 하고 있다. 빙판 위에서는 평지보다 왜 미끄러지고 균형을 잡기 어려울까? 균형을 잡기 위해 우리 몸은 어떻게 반응할까?",
+       curr22:{subject:"체육", area:"신체활동 — 빙상 활동과 균형감각"},
+       curr15:{subject:"체육", area:"표현활동 — 균형과 안전"}},
+      {level:"중간", subject:"과학",
+       q:"얼음 위는 마찰력이 매우 작다. 마찰력이 작아지면 운동량과 속도는 어떻게 변할까? 스케이트 칼날의 좁은 면이 얼음 위에서 잘 미끄러지게 하는 원리는 무엇일까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 마찰력과 운동량"},
+       curr15:{subject:"통합과학", area:"역학적 상호작용 — 마찰력과 운동"}},
+      {level:"어려움", subject:"지구과학",
+       q:"이 그림은 유럽이 매우 추웠던 '소빙기'에 그려졌다고 알려져 있다. 기후가 추웠던 시기에 빙상 활동(스케이팅 등)이 대중적인 놀이로 자리 잡은 것은 환경과 문화의 어떤 관계를 보여줄까?",
+       curr22:{subject:"통합과학2", area:"지구시스템 — 기후 변동의 원인"},
+       curr15:{subject:"지구과학Ⅰ", area:"지구의 기후 변화"}}
+    ]
+  },
+  {
+    title:"비트루비우스 인체비례도",
+    maker:"레오나르도 다빈치",
+    year:"1490년경",
+    file:"Da Vinci Vitruve Luc Viatour.jpg",
+    desc:"팔과 다리를 벌린 인체를 원과 정사각형 안에 배치하여 인체의 이상적인 비례를 탐구한 다빈치의 드로잉입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"그림 속 인물은 팔다리를 벌린 자세와 모은 자세, 두 가지로 겹쳐 그려져 있다. 팔다리를 벌렸을 때와 모았을 때 우리 몸이 차지하는 공간(가동범위)은 어떻게 달라질까? 이것이 운동 동작에서 왜 중요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 신체의 가동범위와 공간 활용"},
+       curr15:{subject:"체육", area:"건강과 체력 — 신체 인식"}},
+      {level:"중간", subject:"수학",
+       q:"다빈치는 사람이 양팔을 벌린 길이가 키와 거의 같다고 생각했다. 학급 친구들의 키와 양팔 길이를 실제로 측정해 비율을 비교하면 정말 1:1에 가까울까? 운동 종목별 선수들의 비율은 어떻게 다를까?",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 비와 비율의 실측 검증"},
+       curr15:{subject:"수학", area:"통계와 비율"}},
+      {level:"어려움", subject:"생명과학",
+       q:"비트루비우스의 '이상적 인체 비례' 이론은 오늘날 의학·스포츠과학·인체공학에서도 활용된다. 신체 비율을 수치화하는 것이 운동 능력 평가나 운동 장비 설계에 어떻게 쓰일 수 있을까?",
+       curr22:{subject:"통합과학1", area:"과학과 인체 — 인체 비례 모델의 활용"},
+       curr15:{subject:"생명과학Ⅰ", area:"인체의 구조와 기능"}}
+    ]
+  },
+  {
+    title:"샤키스 체육관에서",
+    maker:"조지 벨로스",
+    year:"1909",
+    file:"1909 Stag at Sharkey's.jpg",
+    desc:"사설 체육관에서 벌어진 권투 경기의 격렬한 순간을 빠른 붓질로 표현한 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"두 선수가 빠르게 움직이며 균형을 잃지 않고 주먹을 뻗고 있다. 복싱과 같은 스포츠에서 몸무게에 따라 체급을 나누어 경기를 치르는 이유는 무엇일까? 체급 차이가 경기에 미치는 영향을 생각해보자.",
+       curr22:{subject:"체육", area:"신체활동 — 체급 스포츠의 공정성과 안전"},
+       curr15:{subject:"체육", area:"경쟁활동 — 규칙과 안전"}},
+      {level:"중간", subject:"과학",
+       q:"주먹이 상대에게 닿는 순간의 충격은 속도·질량, 그리고 닿는 시간(접촉 시간)과 관련이 있다. 운동량과 충격량의 관계로 '글러브를 끼면 충격이 줄어드는 이유'를 설명할 수 있을까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 운동량과 충격량"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"생활과 윤리",
+       q:"복싱처럼 신체 접촉과 타격이 허용되는 스포츠는 안전성과 윤리 문제로 논쟁이 있어왔다. '경쟁'과 '안전' 사이에서 스포츠의 규칙은 어떤 기준으로 균형을 잡아야 할까?",
+       curr22:{subject:"생활과 윤리", area:"과학·기술과 윤리 — 스포츠와 신체 윤리"},
+       curr15:{subject:"생활과 윤리", area:"문화와 윤리 — 스포츠 윤리"}}
+    ]
+  },
+  {
+    title:"수영하는 사람들",
+    maker:"토머스 에이킨스",
+    year:"1885",
+    file:"Swimming hole.jpg",
+    desc:"강가에서 수영을 즐기는 사람들의 다양한 자세를 담은, 야외 신체 활동을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"수영을 할 때는 몸을 일직선으로 곧게 펴는 '유선형' 자세를 강조한다. 왜 몸을 곧게 펴는 자세가 수영에서 중요할까? 자세가 흐트러지면 어떤 일이 생길까?",
+       curr22:{subject:"체육", area:"신체활동 — 수상 활동의 자세와 효율"},
+       curr15:{subject:"체육", area:"건강과 체력 — 자세와 효율적 동작"}},
+      {level:"중간", subject:"과학",
+       q:"물속에서 몸이 뜨는 것은 '부력' 때문이다. 사람마다 물에 뜨는 정도가 다른 이유는 무엇일까? 부력과 몸의 밀도(체지방, 폐 속 공기량 등)는 어떤 관계가 있을까?",
+       curr22:{subject:"통합과학1", area:"물질과 규칙성 — 밀도와 부력"},
+       curr15:{subject:"통합과학", area:"역학적 상호작용 — 부력"}},
+      {level:"어려움", subject:"통합사회",
+       q:"수영은 즐거운 신체 활동이자 동시에 '생존 기술'이기도 하다. 학교에서 생존 수영 교육을 의무화하는 것에 대해 사회는 어떤 논의를 해왔을까? 안전과 교육의 관계를 생각해보자.",
+       curr22:{subject:"통합사회2", area:"안전한 삶 — 안전 교육과 사회 제도"},
+       curr15:{subject:"통합사회", area:"안전과 위험사회"}}
+    ]
+  },
+  {
+    title:"씨 뿌리는 사람",
+    maker:"장 프랑수아 밀레",
+    year:"1850",
+    file:"Jean-François Millet - The Sower - Google Art Project.jpg",
+    desc:"해 질 무렵 들판에 씨를 뿌리는 농부의 역동적인 던지기 동작을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"농부는 한쪽 다리를 앞으로 내밀고 팔을 크게 휘두르며 씨를 뿌리고 있다. 이 동작과 비슷한 신체 움직임을 사용하는 스포츠(투구, 핸드볼, 창던지기 등)에는 무엇이 있을까? 공통된 동작의 원리는 무엇일까?",
+       curr22:{subject:"체육", area:"신체활동 — 던지기 동작의 운동 원리"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"손에서 떠난 물체(씨앗, 공 등)는 포물선을 그리며 날아간다. 던지는 속도와 각도에 따라 날아가는 범위(사거리)는 어떻게 달라질까? 사거리가 최대가 되는 각도는 몇 도일까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 포물선 운동"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"통합사회",
+       q:"씨 뿌리기는 정확한 거리와 양을 조절해야 하는, 몸으로 익힌 정밀한 동작이었다. 이런 '신체 기술'은 오늘날 스포츠의 '기술(skill)' 개념과 어떻게 연결될까? 노동과 스포츠에서 신체 기술이 갖는 의미를 비교해보자.",
+       curr22:{subject:"통합사회1", area:"노동과 기술 — 신체 기술의 의미 변화"},
+       curr15:{subject:"통합사회", area:"자연환경과 인간"}}
+    ]
+  },
+  {
+    title:"물랭 드 라 갈레트의 무도회",
+    maker:"피에르 오귀스트 르누아르",
+    year:"1876",
+    file:"Renoir - Bal du Moulin de la Galette.jpg",
+    desc:"몽마르트르의 무도회장에서 사람들이 짝을 지어 춤추고 어울리는 일요일 오후 풍경을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"그림 속 사람들은 짝을 지어 왈츠 같은 사교댄스를 추고 있다. 이런 리듬에 맞춘 반복적인 스텝 운동은 우리 몸에 어떤 운동 효과(심박수 변화, 지속 시간 등)를 가져올까?",
+       curr22:{subject:"체육", area:"신체활동 — 리듬 운동의 효과와 강도"},
+       curr15:{subject:"체육", area:"표현활동 — 리듬 운동과 체력"}},
+      {level:"중간", subject:"수학",
+       q:"왈츠는 일정한 3박자에 맞춰 스텝이 반복된다. 이렇게 반복되는 패턴을 주기함수나 수열로 나타낼 수 있을까? 1분 동안 몇 번의 스텝을 밟게 되는지 계산해보자.",
+       curr22:{subject:"공통수학2", area:"함수 — 주기적 패턴의 수학적 표현"},
+       curr15:{subject:"수학", area:"함수와 그래프 — 주기함수"}},
+      {level:"어려움", subject:"통합사회",
+       q:"산업화 이후 노동자와 서민들도 무도회 같은 '여가'를 즐기게 되었다. 여가 시간이 사회적으로 자리 잡은 것은 어떤 의미를 가질까? 신체 활동과 여가 문화는 어떻게 연결될까?",
+       curr22:{subject:"통합사회1", area:"산업화와 여가 — 여가 문화와 신체활동의 등장"},
+       curr15:{subject:"통합사회", area:"산업화와 다양성"}}
+    ]
+  },
+  {
+    title:"스케이팅 타는 목사",
+    maker:"헨리 레이번",
+    year:"1790년대",
+    file:"Reverend Robert Walker (1755 - 1808) Skating on Duddingston Loch.jpg",
+    desc:"얼어붙은 호수 위에서 양팔을 모은 채 스케이트를 타는 한 목사의 모습을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"이 사람은 양팔을 가슴 앞에 모은 채 한쪽 다리로 미끄러지듯 스케이트를 타고 있다. 이 자세가 '효율적인' 자세로 평가받은 이유는 무엇일까? 팔의 위치는 균형을 유지하는 데 어떤 역할을 할까?",
+       curr22:{subject:"체육", area:"신체활동 — 빙상 활동의 자세와 균형"},
+       curr15:{subject:"체육", area:"건강과 체력 — 자세와 균형"}},
+      {level:"중간", subject:"과학",
+       q:"스케이트를 탄 사람은 한 번 추진력을 얻으면 거의 마찰 없이 미끄러져 나간다. 멈추지 않고 일정한 속도로 나아가는 운동은 뉴턴의 운동법칙 중 어떤 법칙으로 설명할 수 있을까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 뉴턴의 운동법칙(관성)"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용 — 운동의 법칙"}},
+      {level:"어려움", subject:"세계사",
+       q:"이 그림 속 인물은 세계 최초의 피겨스케이팅 클럽 회원이었다고 한다. 특정 스포츠를 위한 '클럽'과 '규칙'이 만들어지는 과정은 근대 스포츠의 역사에서 어떤 의미를 가질까?",
+       curr22:{subject:"세계사", area:"근대 유럽 사회의 변화 — 스포츠 클럽과 근대 스포츠의 형성"},
+       curr15:{subject:"세계사", area:"유럽 사회의 형성과 변화"}}
+    ]
+  },
+  {
+    title:"달리는 말 (동작 연구)",
+    maker:"에드워드 마이브리지",
+    year:"1878",
+    file:"The Horse in Motion.jpg",
+    desc:"달리는 말의 한 동작을 일정한 시간 간격으로 나누어 촬영한, 최초의 동작 분석 사진 연구 중 하나입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"이 사진은 말이 달리는 동작을 여러 장면으로 나누어 찍은 것이다. 사람의 운동 동작(달리기, 뛰기 등)을 이렇게 여러 장면으로 나누어 관찰하면 어떤 점을 새롭게 알 수 있을까?",
+       curr22:{subject:"체육", area:"신체활동 — 영상을 활용한 동작 분석"},
+       curr15:{subject:"체육", area:"운동 기술의 이해와 분석"}},
+      {level:"중간", subject:"수학",
+       q:"이 사진들은 일정한 시간 간격으로 촬영되었다. 각 장면 사이에 이동한 거리를 측정하면 시간에 따른 속도 변화를 계산할 수 있다. 평균 속력과 가속도는 어떻게 구할 수 있을까?",
+       curr22:{subject:"공통수학1", area:"함수 — 평균변화율과 속도·가속도"},
+       curr15:{subject:"수학", area:"함수와 그래프"}},
+      {level:"어려움", subject:"과학",
+       q:"이 연속 사진은 눈으로 보기엔 너무 빨라 알 수 없던 움직임(말의 네 발이 동시에 땅에서 떨어지는 순간)을 처음으로 증명했다. 이런 관찰 도구(카메라, 센서 등)는 오늘날 스포츠 분석과 코칭에 어떻게 활용될 수 있을까?",
+       curr22:{subject:"통합과학2", area:"과학과 기술 — 관찰 도구의 발달과 운동 분석"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}}
+    ]
+  },
+  {
+    title:"안개 바다 위의 방랑자",
+    maker:"카스파르 다비드 프리드리히",
+    year:"1818년경",
+    file:"Caspar David Friedrich - Wanderer above the sea of fog.jpg",
+    desc:"바위 봉우리 위에 올라 안개로 가득한 풍경을 내려다보는 한 사람의 뒷모습을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"이 사람은 험한 바위산 정상에 올라 서 있다. 등산처럼 오르막을 오르는 신체 활동은 평지를 걷는 것과 비교해 어떤 신체 능력(심폐 체력, 하지 근력 등)을 더 많이 필요로 할까?",
+       curr22:{subject:"체육", area:"신체활동 — 야외 활동(등산)과 체력 요소"},
+       curr15:{subject:"체육", area:"건강과 체력 — 체력 요소와 운동"}},
+      {level:"중간", subject:"과학",
+       q:"산을 오를수록 기온과 기압은 낮아지고 공기는 희박해진다. 고도가 높아질수록 우리 몸의 호흡과 운동 능력은 어떻게 달라질까?",
+       curr22:{subject:"통합과학2", area:"지구시스템 — 고도에 따른 기압 변화와 신체 반응"},
+       curr15:{subject:"통합과학", area:"대기와 해양 — 기압과 고도"}},
+      {level:"어려움", subject:"통합사회",
+       q:"이 사람은 산 정상에서 거대한 안개 바다를 내려다본다. '정상에 서는 것'을 동경하는 태도는 시대에 따라 어떻게 달라졌을까? 등산이라는 신체 활동에 담긴 의미를 생각해보자.",
+       curr22:{subject:"통합사회2", area:"인간과 자연 — 자연관의 변화와 여가 활동"},
+       curr15:{subject:"통합사회", area:"자연환경과 인간"}}
+    ]
+  },
+  {
+    title:"아이들의 놀이",
+    maker:"피터 브뤼헐",
+    year:"1560",
+    file:"Pieter Bruegel the Elder - Children's Games - Google Art Project.jpg",
+    desc:"굴렁쇠 굴리기, 죽마 타기, 말타기 놀이 등 200명이 넘는 아이들이 다양한 놀이를 즐기는 모습을 담은 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"그림 속 아이들은 굴렁쇠 굴리기, 죽마 타기, 말타기 놀이 등 다양한 활동을 하고 있다. 이런 전통놀이들은 오늘날의 어떤 스포츠나 체육 활동과 연결될 수 있을까?",
+       curr22:{subject:"체육", area:"신체활동 — 전통놀이와 현대 스포츠의 연계"},
+       curr15:{subject:"체육", area:"경쟁·표현활동 — 전통놀이의 이해"}},
+      {level:"중간", subject:"수학",
+       q:"이 그림에는 90가지가 넘는 놀이가 등장한다고 한다. 이 놀이들을 '균형', '던지기', '달리기', '협동' 등의 기준으로 분류한다면 어떤 비율로 나뉠까? 직접 분류하고 통계로 나타내보자.",
+       curr22:{subject:"공통수학2", area:"자료와 가능성 — 자료의 분류와 통계"},
+       curr15:{subject:"수학", area:"통계"}},
+      {level:"어려움", subject:"통합사회",
+       q:"화가는 어른들의 활동만큼 아이들의 놀이도 의미 있다고 여기며 이 그림을 그렸다고 한다. '놀이'와 '신체 활동'은 아이들의 성장과 사회화에서 어떤 역할을 할까?",
+       curr22:{subject:"통합사회1", area:"사회화와 청소년기 — 놀이와 신체 활동의 역할"},
+       curr15:{subject:"통합사회", area:"인권 보장과 청소년의 권리"}}
+    ]
+  },
+  {
+    title:"야구 연습",
+    maker:"토머스 에이킨스",
+    year:"1875",
+    file:"Baseball Players Practicing Thomas Eakins 1875.jpeg",
+    desc:"공원에서 야구 선수들이 공을 던지고 받는 연습을 하는 모습을 사실적으로 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"야구에서 공을 던지고 받는 동작은 짝을 지어 연습한다. 던지기와 받기 동작에서 각각 어떤 신체 부위와 감각이 중요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 던지기·받기 동작의 운동 원리"},
+       curr15:{subject:"체육", area:"도전·경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"야구공이 날아오는 동안 선수는 공의 위치를 예측해 손을 뻗는다. 공이 날아오는 속도와 거리에 따라 선수가 반응할 수 있는 시간은 얼마나 될까? 이 시간을 계산하고 사람의 평균 반응 시간과 비교해보자.",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 등속·등가속도 운동과 반응 시간"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"통합사회",
+       q:"야구는 미국에서 '국민 스포츠'로 자리 잡았다. 특정 스포츠가 한 나라의 '국민 스포츠'로 여겨지게 되는 과정에는 어떤 사회·문화적 요인이 작용할까? 우리나라의 경우와 비교해보자.",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 스포츠와 국가 정체성"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"파나테나이아 제전의 달리기 선수들",
+    maker:"에우필레토스 화가 (고대 그리스)",
+    year:"기원전 530년경",
+    file:"Terracotta Panathenaic prize amphora MET DP245711.jpg",
+    desc:"파나테나이아 제전의 우승 상품이었던 항아리에, 나란히 달리는 단거리 선수들의 모습을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"항아리에는 여러 선수가 나란히 달리는 모습이 그려져 있다. 짧은 거리를 빠르게 달리는 단거리 달리기에서 좋은 출발 자세와 동작은 왜 중요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 달리기 동작의 운동 원리(출발과 자세)"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"수학",
+       q:"이 항아리는 고대 올림픽의 모태가 된 파나테나이아 제전의 우승 상품이었다. 만약 이 경주가 일정한 거리(스타디온, 약 192m)를 달리는 경기였다면, 평균 속력을 구하는 데 필요한 정보는 무엇일까? 현대 100m 달리기 기록과 비교해보자.",
+       curr22:{subject:"공통수학1", area:"함수 — 거리·시간·속력의 관계"},
+       curr15:{subject:"수학", area:"함수와 그래프"}},
+      {level:"어려움", subject:"세계사",
+       q:"고대 그리스에서는 운동 경기 우승자에게 올리브 기름이 담긴 항아리를 상으로 주었다. 오늘날 스포츠 대회의 보상(메달, 상금 등)과 비교했을 때, 상의 형태가 의미하는 것은 무엇일까?",
+       curr22:{subject:"세계사", area:"고대 지중해 세계 — 그리스의 제전과 보상 체계"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"야외에서의 결혼식 춤",
+    maker:"피터 브뤼헐",
+    year:"1566년경",
+    file:"Pieter Bruegel the Elder - Wedding Dance in the Open Air - WGA03505.jpg",
+    desc:"농촌 마을의 결혼식 잔치에서 여러 쌍의 사람들이 짝을 지어 춤추는 모습을 활기차게 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"여러 쌍의 사람들이 짝을 지어 춤을 추고 있다. 짝을 이루어 추는 춤은 혼자 추는 춤과 비교해 어떤 신체적·사회적 효과가 있을까?",
+       curr22:{subject:"체육", area:"신체활동 — 짝·모둠 활동의 신체적 효과"},
+       curr15:{subject:"체육", area:"표현활동 — 협응과 사회성"}},
+      {level:"중간", subject:"기하",
+       q:"여러 쌍이 같은 패턴의 춤을 추면 전체적으로 어떤 모양(대칭, 반복)이 만들어질까? 사람들의 위치를 점으로 표시하고, 시간에 따라 어떻게 이동하는지 패턴으로 나타내보자.",
+       curr22:{subject:"기하", area:"도형의 이동 — 대칭과 이동의 패턴"},
+       curr15:{subject:"수학", area:"도형의 이동"}},
+      {level:"어려움", subject:"생활과 윤리",
+       q:"이 시대에는 '춤추는 것' 자체가 교회와 권력자들에게 비판받기도 했다. 신체를 자유롭게 움직이는 활동이 사회적으로 '허용'되거나 '금지'되는 기준은 무엇이었을까? 오늘날에도 비슷한 사례가 있을까?",
+       curr22:{subject:"생활과 윤리", area:"문화와 윤리 — 신체 표현에 대한 사회적 규범"},
+       curr15:{subject:"생활과 윤리", area:"문화와 윤리"}}
+    ]
+  },
+  {
+    title:"검투사 모자이크",
+    maker:"작가 미상 (로마)",
+    year:"4세기경",
+    file:"Retiarius vs secutor from Borghese mosaic.jpg",
+    desc:"그물과 삼지창을 든 검투사와 칼과 방패를 든 검투사가 맞붙는 장면을 표현한 로마 시대의 모자이크입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"모자이크에는 그물과 삼지창을 든 선수와 칼과 방패를 든 선수가 맞붙는 장면이 그려져 있다. 서로 다른 무기와 장비를 가진 두 선수가 겨루는 종목에서는 어떤 전략 차이가 생길까?",
+       curr22:{subject:"체육", area:"신체활동 — 경쟁·전략형 스포츠의 이해"},
+       curr15:{subject:"체육", area:"경쟁활동 — 전략과 규칙"}},
+      {level:"중간", subject:"수학",
+       q:"그물을 던져 상대를 포획하는 동작은 일정한 범위 안에서 이루어진다. 그물이 펼쳐지는 범위를 원의 넓이로 계산한다면, 그물의 크기와 던지는 거리는 어떤 관계가 있을까?",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 원의 넓이와 활용"},
+       curr15:{subject:"수학", area:"도형의 성질"}},
+      {level:"어려움", subject:"생활과 윤리",
+       q:"고대 로마의 검투 경기는 대중에게 인기 있는 '오락'이었지만, 동시에 사람의 생명을 건 싸움이었다. 오늘날 격투 스포츠를 즐기는 것과 비교했을 때, '오락'과 '생명·안전'의 경계는 어디에 있어야 할까?",
+       curr22:{subject:"생활과 윤리", area:"과학·기술과 윤리 — 스포츠와 생명 윤리"},
+       curr15:{subject:"생활과 윤리", area:"문화와 윤리 — 스포츠 윤리"}}
+    ]
+  },
+  {
+    title:"축구 선수의 역동성",
+    maker:"움베르토 보치오니",
+    year:"1913",
+    file:"Boccioni - Dynamism of a Soccer Player.jpg",
+    desc:"축구 선수가 공을 차는 순간의 움직임을, 형태가 흩어질 정도로 역동적으로 표현한 미래주의 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"이 그림은 축구 선수가 공을 차는 순간의 움직임을 표현했다. 공을 강하게 차는 동작에서 다리와 몸의 움직임은 어떤 순서로 일어날까?",
+       curr22:{subject:"체육", area:"신체활동 — 차기 동작의 운동 원리"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"공을 찰 때 발이 공에 가하는 힘이 클수록 공은 더 빠르고 멀리 날아간다. 힘·질량·가속도의 관계(F=ma)로 '더 강하게 차면 공이 왜 더 빨리 날아가는지' 설명해보자.",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 뉴턴의 운동법칙(F=ma)"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"미술",
+       q:"화가는 선수의 모습을 알아볼 수 없을 정도로 '움직임' 자체를 그리려고 했다. 정지된 이미지(그림, 사진)로 '움직임'을 표현하는 다양한 방법에는 무엇이 있을까? 스포츠 중계의 슬로모션 장면과 비교해보자.",
+       curr22:{subject:"미술", area:"표현 — 움직임과 시간의 시각적 표현"},
+       curr15:{subject:"미술", area:"표현 — 동세의 표현"}}
+    ]
+  },
+  {
+    title:"사이클 선수의 역동성",
+    maker:"움베르토 보치오니",
+    year:"1913",
+    file:"Umberto Boccioni - Dynamism of a Cyclist.jpg",
+    desc:"빠르게 페달을 밟는 사이클 선수의 움직임과 속도감을 형태의 분해와 곡선으로 표현한 미래주의 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"자전거를 타는 사람은 두 바퀴 위에서 균형을 잡으며 페달을 밟아 앞으로 나아간다. 자전거 타기에서 균형을 유지하는 데 속도는 어떤 영향을 줄까? (천천히 갈 때와 빠르게 갈 때를 비교해보자)",
+       curr22:{subject:"체육", area:"신체활동 — 균형과 속도의 관계"},
+       curr15:{subject:"체육", area:"건강과 체력 — 균형"}},
+      {level:"중간", subject:"수학",
+       q:"자전거 페달을 한 바퀴 돌리면 뒷바퀴는 기어 비율에 따라 여러 바퀴를 돈다. 페달 회전수, 기어비, 바퀴의 둘레를 알면 자전거가 이동한 거리를 어떻게 구할 수 있을까?",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 원의 둘레와 비율(기어비)"},
+       curr15:{subject:"수학", area:"도형의 측정"}},
+      {level:"어려움", subject:"미술",
+       q:"이 그림은 자전거를 탄 사람의 '움직임'과 '속도감' 자체를 표현하려 했다. 빠르게 움직이는 물체를 그림이나 사진으로 표현할 때, 어떤 시각적 효과(흐림, 선, 색 등)를 활용할 수 있을까?",
+       curr22:{subject:"미술", area:"표현 — 속도와 운동감의 시각적 표현"},
+       curr15:{subject:"미술", area:"표현 — 동세와 속도감"}}
+    ]
+  },
+  {
+    title:"알프스를 넘는 나폴레옹",
+    maker:"자크 루이 다비드",
+    year:"1801",
+    file:"Jacques-Louis David - Napoleon Crossing the Alps - Kunsthistorisches Museum.jpg",
+    desc:"나폴레옹이 말을 타고 알프스산을 넘는 영웅적인 모습을 역동적으로 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"말은 앞다리를 높이 들고 있고, 기수는 한 손으로 방향을 가리키고 있다. 이런 자세를 유지하려면 기수는 어떤 균형 감각과 근력이 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 동물과 함께하는 운동에서의 균형"},
+       curr15:{subject:"체육", area:"건강과 체력 — 균형과 협응력"}},
+      {level:"중간", subject:"과학",
+       q:"말이 두 다리로 서서 앞다리를 든 자세는 무게중심이 뒤로 이동한 상태다. 이 자세에서 말과 기수가 넘어지지 않으려면 무게중심과 받침점의 관계는 어떠해야 할까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 무게중심과 안정성"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"미술",
+       q:"실제로 이 인물은 이 원정 때 말이 아닌 노새를 타고 평범한 옷을 입었다고 한다. 화가는 왜 사실과 다르게, 역동적인 승마 자세로 그렸을까? 통치자의 신체 이미지를 '연출'하는 것은 오늘날의 정치 홍보와 어떤 점이 비슷하고 다를까?",
+       curr22:{subject:"통합사회2", area:"정치와 미디어 — 권력자의 이미지 형성과 정치 선전"},
+       curr15:{subject:"통합사회", area:"인권 보장과 정치 참여"}}
+    ]
+  },
+  {
+    title:"서커스",
+    maker:"조르주 쇠라",
+    year:"1891",
+    file:"Georges Seurat - The Circus - Google Art Project.jpg",
+    desc:"말 위에서 균형을 잡는 곡예사와 공중제비를 넘는 사람들, 이를 지켜보는 관객들을 점묘법으로 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"그림 속에는 달리는 말 위에서 균형을 잡는 곡예사와 공중에서 재주를 넘는 사람들이 등장한다. 이런 곡예 동작에는 일반적인 운동과 비교해 어떤 신체 능력(균형성, 유연성, 협응력)이 특히 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 표현 활동의 체력 요소(균형성·유연성)"},
+       curr15:{subject:"체육", area:"표현활동 — 기본 운동 기능"}},
+      {level:"중간", subject:"수학",
+       q:"화가는 이 그림을 작은 색 점을 가득 찍어 형태를 표현하는 '점묘법'으로 그렸다. 점 하나의 크기와 점 사이의 간격(밀도)을 이용하면, 일정한 넓이를 채우는 데 필요한 점의 개수를 어떻게 추정할 수 있을까?",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 넓이와 밀도의 관계"},
+       curr15:{subject:"수학", area:"도형의 측정"}},
+      {level:"어려움", subject:"통합사회",
+       q:"화가는 곡예를 보는 관객들의 모습도 함께 그렸는데, 관객의 좌석 위치(앞줄과 뒷줄)에 따라 옷차림과 자세가 다르게 표현되었다. 공연·스포츠 관람 문화에서 좌석의 위치가 사회적 차이를 보여주는 경우를 더 생각해볼 수 있을까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 여가·관람 문화와 사회 구조"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"카누 타는 사람들",
+    maker:"귀스타브 카유보트",
+    year:"1878",
+    file:"Les Périssoires by Gustave Caillebotte.JPG",
+    desc:"좁고 긴 1인용 배(페리수아르)에 앉아 짧은 패들로 물살을 가르며 나아가는 사람들을 위에서 내려다본 시점으로 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"사람들은 좁고 긴 1인용 배에 앉아 짧은 패들로 양쪽 물을 번갈아 저으며 나아가고 있다. 패들을 양쪽으로 번갈아 젓는 동작은 몸의 어느 부위의 회전과 비틀림을 주로 사용할까?",
+       curr22:{subject:"체육", area:"신체활동 — 패들링 동작과 회전·비틀림"},
+       curr15:{subject:"체육", area:"운동 기술의 이해"}},
+      {level:"중간", subject:"과학",
+       q:"패들을 양쪽으로 번갈아 저을 때마다 배의 방향은 조금씩 흔들릴 수 있다. 양쪽을 같은 힘과 횟수로 저어야 배가 똑바로 나아갈 수 있는 이유를, 힘의 방향과 합력의 관점에서 설명해보자.",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 힘의 합성과 방향"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"미술",
+       q:"화가는 배 위에서 내려다보는 듯한 독특한 시점으로 이 장면을 그렸다. 이런 '위에서 내려다보는 시점'은 스포츠 중계의 어떤 촬영 기법(드론 샷 등)과 비슷할까? 시점에 따라 운동 장면이 어떻게 다르게 보일까?",
+       curr22:{subject:"미술", area:"표현 — 시점과 구도"},
+       curr15:{subject:"미술", area:"표현 — 화면 구성과 시점"}}
+    ]
+  },
+  {
+    title:"크로켓 치는 사람들",
+    maker:"윈슬로 호머",
+    year:"1865",
+    file:"Winslow Homer - Croquet Players (1865).jpg",
+    desc:"잔디밭에서 나무 망치(말렛)로 공을 쳐서 문(후프)을 통과시키는 크로켓 경기를 즐기는 사람들을 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"크로켓은 나무 망치로 공을 쳐서 정해진 문(후프)을 통과시키는 경기이다. 정확한 방향과 힘으로 공을 치는 동작에서는 어떤 신체 감각(눈과 손의 협응 등)이 중요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 표적형 스포츠의 동작 원리"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"수학",
+       q:"경기장에는 여러 개의 후프가 정해진 위치에 배치된다. 공을 쳐서 후프를 통과시키려면 공의 방향과 후프 사이의 각도를 어떻게 계산해야 할까? 다른 공을 맞고 튕겨 나가는(반사) 경로도 계산할 수 있을까?",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 각도와 방향의 계산"},
+       curr15:{subject:"수학", area:"도형의 성질"}},
+      {level:"어려움", subject:"통합사회",
+       q:"크로켓은 19세기 미국에서 남녀가 함께 즐길 수 있는 드문 스포츠로 인기를 끌었다고 한다. 특정 스포츠가 '성별과 관계없이 함께 즐기는 활동'으로 자리 잡는 것은 사회적으로 어떤 의미를 가질까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 스포츠와 성평등"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"골퍼들",
+    maker:"찰스 리스",
+    year:"1847",
+    file:"'The Golfers' by Charles Lees, 1847, oil on canvas, National Galleries of Scotland, Edinburgh.jpg",
+    desc:"스코틀랜드 세인트앤드루스 골프장에서 벌어진 경기 한 장면을, 50명이 넘는 인물과 함께 그린 작품입니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"여러 사람이 골프채를 휘둘러 작은 공을 치고 있다. 골프 스윙처럼 큰 동작으로 작은 공을 정확히 맞히는 운동에서는 어떤 신체 능력(유연성, 회전력, 집중력)이 중요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 표적형 스포츠의 동작 원리"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"수학",
+       q:"골프채는 종류(각도)에 따라 공이 날아가는 궤적의 모양이 달라진다. 클럽의 각도(로프트)와 공이 날아가는 높이·거리는 어떤 관계가 있을까? 각도가 다른 포물선들을 그래프로 비교해보자.",
+       curr22:{subject:"공통수학2", area:"도형과 측정 — 각도에 따른 포물선의 비교"},
+       curr15:{subject:"수학", area:"도형의 방정식"}},
+      {level:"어려움", subject:"통합사회",
+       q:"이 그림에는 50명이 넘는 인물이 등장하지만, 공을 주워주는 캐디 소년은 신발도 신지 않은 모습으로 작게 그려져 있다. 같은 공간(골프장)에서 활동하지만 신분이나 역할이 다른 사람들을 함께 그린 것은 어떤 의미를 가질까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 여가 공간 속 사회적 위계"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"여성 양궁 선수들",
+    maker:"윌리엄 파월 프리스",
+    year:"1872",
+    file:"William Powell Frith (1819-1909) - The Fair Toxophilites (English Archers, Nineteenth Century) - 305-1976 - Royal Albert Memorial Museum ^ Art Gallery.jpg",
+    desc:"19세기 영국에서 유행했던 여성 양궁(토소필리) 모임을 그린 작품으로, 활을 쏘는 자세를 보여줍니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"활을 쏘는 사람은 활을 든 팔을 곧게 펴고, 시위를 당긴 팔과 어깨로 균형을 잡고 있다. 양궁에서 자세를 일정하게 유지하는 것이 왜 중요할까? 어떤 근육이 가장 많이 쓰일까?",
+       curr22:{subject:"체육", area:"신체활동 — 표적형 스포츠의 자세와 정확성"},
+       curr15:{subject:"체육", area:"도전활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"화살은 활시위를 떠난 뒤 포물선을 그리며 날아가 표적에 맞는다. 같은 힘으로 쏘더라도 활을 든 각도에 따라 화살이 도달하는 위치는 어떻게 달라질까? 표적의 거리에 맞춰 각도를 어떻게 조절해야 할까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 포물선 운동과 표적 명중"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"통합사회",
+       q:"이 그림 속 양궁은 신사·숙녀들의 '사교를 위한 여가 활동'으로 그려져 있다. 오늘날 양궁은 올림픽의 정식 종목이기도 하다. 같은 신체 활동이 '사교 모임'에서 '경쟁 스포츠'로 자리를 옮기는 과정에는 어떤 변화가 있었을까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 여가 활동에서 경쟁 스포츠로의 변화"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"펜싱",
+    maker:"오리지널 픽토그램",
+    year:"",
+    icon:'<svg viewBox="0 0 100 100" class="picto" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><circle cx="26" cy="18" r="7" fill="currentColor" stroke="none"/><line x1="26" y1="25" x2="40" y2="50"/><line x1="40" y1="50" x2="24" y2="82"/><line x1="40" y1="50" x2="62" y2="84"/><line x1="30" y1="33" x2="18" y2="44"/><line x1="34" y1="32" x2="90" y2="20"/><circle cx="92" cy="19" r="2" fill="currentColor" stroke="none"/></g></svg>',
+    desc:"적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램입니다. 런지 자세로 검을 뻗는 펜싱 동작을 표현했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"펜싱 선수는 한쪽 다리를 굽히고 검을 쥔 팔을 쭉 뻗는 '런지' 자세로 상대를 찌른다. 이 자세에서 빠르게 앞으로 나가고 다시 뒤로 물러나려면 어떤 다리 근력과 반응 속도가 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 투기형 스포츠의 거리 조절과 찌르기 동작"},
+       curr15:{subject:"체육", area:"경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"수학",
+       q:"펜싱에서는 두 선수의 검끝이 거의 동시에 상대에게 닿는 것처럼 보여도, 전자 판정기는 0.01초 단위의 시간 차이로 승패를 가른다. 이렇게 매우 작은 시간 차이를 비교하고 순서를 정하는 것은 어떤 의미가 있을까?",
+       curr22:{subject:"공통수학1", area:"수와 연산 — 매우 작은 단위의 측정값 비교"},
+       curr15:{subject:"수학", area:"측정과 어림"}},
+      {level:"어려움", subject:"세계사",
+       q:"펜싱은 검으로 겨루던 '결투'에서 유래해 오늘날 규칙과 보호 장비를 갖춘 안전한 스포츠로 발전했다. 위험했던 전통이 안전한 경쟁 스포츠로 바뀌는 과정은 다른 종목(복싱, 격투 스포츠 등)에서도 찾아볼 수 있을까?",
+       curr22:{subject:"세계사", area:"근대 유럽 사회의 변화 — 결투 문화와 근대 스포츠의 형성"},
+       curr15:{subject:"세계사", area:"유럽 사회의 형성과 변화"}}
+    ]
+  },
+  {
+    title:"배구",
+    maker:"오리지널 픽토그램",
+    year:"",
+    icon:'<svg viewBox="0 0 100 100" class="picto" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><line x1="16" y1="12" x2="16" y2="90" stroke-width="4"/><circle cx="60" cy="16" r="7" fill="currentColor" stroke="none"/><line x1="58" y1="23" x2="55" y2="48"/><line x1="55" y1="48" x2="44" y2="84"/><line x1="55" y1="48" x2="68" y2="84"/><line x1="57" y1="26" x2="80" y2="6"/><line x1="57" y1="30" x2="40" y2="42"/><circle cx="86" cy="4" r="6" stroke-width="5"/></g></svg>',
+    desc:"적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램입니다. 네트 옆에서 점프해 공을 치는 배구 동작을 표현했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"배구는 네트를 사이에 두고 공을 손으로 쳐서 넘기는 경기다. 공을 떨어뜨리지 않고 정확하게 토스하거나 강하게 스파이크하려면 어떤 신체 감각과 협응력이 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 네트형 경쟁 스포츠의 동작 원리"},
+       curr15:{subject:"체육", area:"경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"수학",
+       q:"배구공이 네트(높이 2.43m)를 넘어 상대 코트(길이 9m) 안에 떨어지게 하려면, 공을 치는 높이·속도·각도가 일정한 범위 안에 있어야 한다. 이런 '범위를 만족해야 하는 조건'을 부등식으로 어떻게 나타낼 수 있을까?",
+       curr22:{subject:"공통수학2", area:"부등식 — 조건을 만족하는 범위의 표현"},
+       curr15:{subject:"수학", area:"부등식과 영역"}},
+      {level:"어려움", subject:"통합사회",
+       q:"배구는 한 팀이 공을 최대 3번까지만 건드릴 수 있고, 같은 선수가 연속으로 두 번 칠 수 없다는 규칙이 있다. 이런 '제한된 협력' 규칙은 선수들의 역할 분담과 팀워크에 어떤 영향을 줄까? 사회 속 역할 분담과 비교해보자.",
+       curr22:{subject:"통합사회1", area:"사회화와 협력 — 규칙과 역할 분담"},
+       curr15:{subject:"통합사회", area:"인간과 공동체"}}
+    ]
+  },
+  {
+    title:"탁구",
+    maker:"오리지널 픽토그램",
+    year:"",
+    icon:'<svg viewBox="0 0 100 100" class="picto" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="18" r="7" fill="currentColor" stroke="none"/><line x1="28" y1="25" x2="34" y2="52"/><line x1="34" y1="52" x2="22" y2="86"/><line x1="34" y1="52" x2="46" y2="86"/><line x1="32" y1="32" x2="62" y2="22"/><ellipse cx="72" cy="20" rx="13" ry="6" transform="rotate(-25 72 20)" stroke-width="5"/><circle cx="90" cy="10" r="3" fill="currentColor" stroke="none"/></g></svg>',
+    desc:"적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램입니다. 라켓으로 작은 공을 가볍게 받아치는 탁구 동작을 표현했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"탁구공은 매우 가볍고 작아서, 라켓 면의 각도와 휘두르는 속도에 따라 회전이 크게 달라진다. 공에 강한 회전(스핀)을 거는 동작은 손목과 팔의 어떤 움직임으로 만들어질까?",
+       curr22:{subject:"체육", area:"신체활동 — 라켓형 스포츠의 타구 동작과 회전"},
+       curr15:{subject:"체육", area:"경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"탁구공에 강한 회전이 걸리면 직선이 아닌 휘어진 경로로 날아간다. 이런 현상은 회전하는 물체 주위의 공기 흐름 차이(마그누스 효과)로 설명할 수 있다. 축구의 '휘어지는 슈팅'과 비교해 공통점을 찾아보자.",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 회전하는 물체의 운동(마그누스 효과)"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"통합사회",
+       q:"탁구는 좁은 실내 공간과 비교적 적은 장비로도 즐길 수 있는 스포츠다. 공간과 장비의 제약이 적은 스포츠가 학교·가정에 널리 보급되는 것은 스포츠의 대중화·접근성에 어떤 영향을 줄까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 스포츠의 대중화와 접근성"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"태권도",
+    maker:"오리지널 픽토그램",
+    year:"",
+    icon:'<svg viewBox="0 0 100 100" class="picto" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="16" r="7" fill="currentColor" stroke="none"/><line x1="22" y1="23" x2="36" y2="50"/><line x1="36" y1="50" x2="22" y2="86"/><line x1="36" y1="50" x2="86" y2="38"/><line x1="86" y1="38" x2="96" y2="44"/><line x1="28" y1="32" x2="14" y2="44"/><line x1="30" y1="34" x2="44" y2="24"/></g></svg>',
+    desc:"적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램입니다. 한쪽 다리로 균형을 잡고 높이 발차기를 하는 태권도 동작을 표현했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"태권도의 발차기는 다리를 빠르게 뻗어 목표를 정확히 맞히는 동작이다. 높은 발차기를 할 때 한쪽 다리로 균형을 잃지 않으려면 어떤 신체 부위(코어, 골반 등)의 안정성이 필요할까?",
+       curr22:{subject:"체육", area:"신체활동 — 투기형 스포츠의 발차기 동작 원리"},
+       curr15:{subject:"체육", area:"경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"발차기의 위력은 다리를 휘두르는 속도와 회전 반경에 따라 달라진다. 같은 힘으로 다리를 휘둘러도 다리를 곧게 펴서(회전 반경을 크게 해서) 차면 발끝의 속도는 왜 더 빨라질까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 회전 운동에서 반경과 속도의 관계"},
+       curr15:{subject:"물리학Ⅱ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"통합사회",
+       q:"태권도는 우리나라에서 만들어져 올림픽 정식 종목이 된 무예이다. 한 나라의 전통 무예가 '세계 공통의 경기 규칙'을 갖추며 국제 스포츠로 자리 잡는 과정에서, 무엇이 새롭게 만들어지고 무엇이 그대로 유지되었을까?",
+       curr22:{subject:"통합사회2", area:"문화와 다양성 — 전통 무예의 세계화와 표준화"},
+       curr15:{subject:"통합사회", area:"문화와 다양성"}}
+    ]
+  },
+  {
+    title:"유도",
+    maker:"오리지널 픽토그램",
+    year:"",
+    icon:'<svg viewBox="0 0 100 100" class="picto" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="64" r="7" fill="currentColor" stroke="none"/><line x1="26" y1="70" x2="46" y2="82"/><line x1="46" y1="82" x2="64" y2="78"/><line x1="46" y1="82" x2="40" y2="94"/><line x1="38" y1="62" x2="58" y2="48"/><circle cx="64" cy="22" r="7" fill="currentColor" stroke="none"/><line x1="62" y1="29" x2="50" y2="48"/><line x1="50" y1="48" x2="66" y2="58"/><line x1="50" y1="48" x2="34" y2="50"/></g></svg>',
+    desc:"적합한 퍼블릭도메인 명화를 찾지 못해, 같은 형식으로 구성한 자체 제작 픽토그램입니다. 상대를 들어 던지는 유도의 메치기 동작을 표현했습니다.",
+    levels:[
+      {level:"쉬움", subject:"체육",
+       q:"유도는 상대의 무게중심을 무너뜨려 던지거나 제압하는 운동이다. 상대를 들어 던지는 기술에서는 큰 힘보다 '균형을 무너뜨리는 타이밍'이 중요하다고 한다. 왜 그럴까?",
+       curr22:{subject:"체육", area:"신체활동 — 투기형 스포츠의 균형과 타이밍"},
+       curr15:{subject:"체육", area:"경쟁활동 — 동작의 원리"}},
+      {level:"중간", subject:"과학",
+       q:"유도에서 상대를 던질 때, 비교적 작은 힘으로도 무거운 상대를 들어 올릴 수 있는 것은 '지레의 원리'와 관련이 있다. 받침점·힘점·작용점의 위치를 어떻게 바꾸면 필요한 힘이 줄어들까?",
+       curr22:{subject:"통합과학2", area:"역학과 에너지 — 지레의 원리와 돌림힘"},
+       curr15:{subject:"물리학Ⅰ", area:"역학적 상호작용"}},
+      {level:"어려움", subject:"생활과 윤리",
+       q:"유도는 '부드러움으로 강함을 이긴다(柔能制剛)'는 원리를 강조하며, 경기 전후 서로 인사하는 예(禮)를 중요하게 여긴다. 격투형 스포츠에서 '예의와 존중'을 강조하는 전통은 어떤 의미가 있을까?",
+       curr22:{subject:"생활과 윤리", area:"문화와 윤리 — 무도(武道) 정신과 스포츠 윤리"},
+       curr15:{subject:"생활과 윤리", area:"문화와 윤리"}}
+    ]
+  }
+];
+
+const LEVEL_CLASS = {"쉬움":"easy","중간":"mid","어려움":"hard"};
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderLevel(item, idx, lv, li){
+  const cls = LEVEL_CLASS[lv.level] || "easy";
+  return `<div class="level level-${cls}">
+    <div class="level-head">
+      <span class="level-tag">${esc(lv.level)}</span>
+      <span class="subject-badge">${esc(lv.subject)}</span>
+    </div>
+    <p class="q">${esc(lv.q)}</p>
+    <div class="curri">
+      <div class="curri-item"><b>2022개정</b>${esc(lv.curr22.subject)} — ${esc(lv.curr22.area)}</div>
+      <div class="curri-item"><b>2015개정</b>${esc(lv.curr15.subject)} — ${esc(lv.curr15.area)}</div>
+    </div>
+    <button class="start-btn" onclick="openWorksheet(${idx},${li})">이 질문으로 탐구 시작 →</button>
+  </div>`;
+}
+
+function renderMedia(item, lane){
+  if(item.icon){
+    return `<div class="card-media icon-media">
+      <span class="lane-badge">LANE ${lane}</span>
+      ${item.icon}
+    </div>`;
+  }
+  return `<div class="card-media">
+    <span class="lane-badge">LANE ${lane}</span>
+    <img class="card-img" alt="${esc(item.title)}" referrerpolicy="no-referrer" data-file="${esc(item.file)}">
+    <div class="img-fallback">
+      <div class="ico">🏃</div>
+      <div class="ft">${esc(item.title)}</div>
+      <div class="fs">${esc(item.maker)}${item.year ? ' · '+esc(item.year) : ''}</div>
+    </div>
+  </div>`;
+}
+
+function renderCard(item, idx){
+  const lane = String(idx+1).padStart(2,'0');
+  return `<article class="card">
+    ${renderMedia(item, lane)}
+    <div class="card-body">
+      <h3>${esc(item.title)}</h3>
+      <p class="meta">${esc(item.maker)}${item.year ? ' · '+esc(item.year) : ''}</p>
+      <p class="desc">${esc(item.desc)}</p>
+      <div class="levels">
+        ${item.levels.map((lv,li)=>renderLevel(item,idx,lv,li)).join('')}
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderGalleryCard(item, idx){
+  const lane = String(idx+1).padStart(2,'0');
+  return `<article class="gcard" onclick="showDetail(${idx})">
+    ${renderMedia(item, lane)}
+    <div class="gcard-body">
+      <h3>${esc(item.title)}</h3>
+      <p class="meta">${esc(item.maker)}${item.year ? ' · '+esc(item.year) : ''}</p>
+      <div class="subject-row">
+        <span class="subject-chip chip-easy">${esc(item.levels[0].subject)}</span>
+        <span class="subject-chip chip-mid">${esc(item.levels[1].subject)}</span>
+        <span class="subject-chip chip-hard">${esc(item.levels[2].subject)}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+function init(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = DATA.map((item,idx)=>renderGalleryCard(item,idx)).join('');
+  loadImages(grid);
+}
+
+function showDetail(idx){
+  const detailCard = document.getElementById('detailCard');
+  detailCard.innerHTML = renderCard(DATA[idx], idx);
+  loadImages(detailCard);
+  document.getElementById('galleryView').classList.add('hidden');
+  document.getElementById('detailView').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function showGallery(){
+  document.getElementById('detailView').classList.add('hidden');
+  document.getElementById('galleryView').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function loadImages(root){
+  root.querySelectorAll('.card-img').forEach(img=>{
+    const file = img.getAttribute('data-file');
+    const api = 'https://commons.wikimedia.org/w/api.php?action=query&titles=' +
+      encodeURIComponent('File:'+file) + '&prop=imageinfo&iiprop=url&iiurlwidth=700&format=json&origin=*';
+    fetch(api).then(r=>r.json()).then(data=>{
+      const pages = data.query && data.query.pages;
+      const page = pages && Object.values(pages)[0];
+      const info = page && page.imageinfo && page.imageinfo[0];
+      const url = info && (info.thumburl || info.url);
+      if(!url) throw new Error('no url');
+      img.src = url;
+      img.onerror = ()=> showFallback(img);
+    }).catch(()=> showFallback(img));
+  });
+}
+function showFallback(img){
+  img.classList.add('hidden');
+  const fb = img.parentElement.querySelector('.img-fallback');
+  if(fb) fb.classList.add('show');
+}
+
+/* ---------------- Modals ---------------- */
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+let currentWS = null; // {idx, li}
+
+function openWorksheet(idx, li){
+  const item = DATA[idx];
+  const lv = item.levels[li];
+  currentWS = {idx, li};
+  document.getElementById('wsTitle').textContent = '탐구 활동지';
+  document.getElementById('wsMeta').textContent =
+    `${item.title} (${item.maker}, ${item.year}) · ${lv.level} · ${lv.subject}`;
+  document.getElementById('wsQuestion').textContent = lv.q;
+  document.getElementById('wsName').value = '';
+  document.getElementById('wsHypothesis').value = '';
+  document.getElementById('wsMethod').value = '';
+  document.getElementById('wsResearch').value = '';
+  document.getElementById('wsConclusion').value = '';
+  document.getElementById('wsExtra').value = '';
+  openModal('worksheetModal');
+}
+
+function collectFormData(){
+  const item = DATA[currentWS.idx];
+  const lv = item.levels[currentWS.li];
+  return {
+    id: Date.now(),
+    cardTitle: item.title,
+    cardMeta: `${item.maker}, ${item.year}`,
+    level: lv.level,
+    subject: lv.subject,
+    question: lv.q,
+    name: document.getElementById('wsName').value,
+    hypothesis: document.getElementById('wsHypothesis').value,
+    method: document.getElementById('wsMethod').value,
+    research: document.getElementById('wsResearch').value,
+    conclusion: document.getElementById('wsConclusion').value,
+    extra: document.getElementById('wsExtra').value,
+    savedAt: new Date().toLocaleString('ko-KR')
+  };
+}
+
+function saveWorksheet(){
+  if(!currentWS) return;
+  const ws = collectFormData();
+  let all = [];
+  try{ all = JSON.parse(localStorage.getItem('pe_math_worksheets') || '[]'); }catch(e){ all = []; }
+  all.unshift(ws);
+  localStorage.setItem('pe_math_worksheets', JSON.stringify(all));
+  alert('저장되었습니다. 우측 상단 "나의 탐구 목록"에서 다시 볼 수 있어요.');
+}
+
+function renderSavedList(){
+  let all = [];
+  try{ all = JSON.parse(localStorage.getItem('pe_math_worksheets') || '[]'); }catch(e){ all = []; }
+  const wrap = document.getElementById('savedList');
+  if(all.length === 0){
+    wrap.innerHTML = '<div class="empty-msg">아직 저장된 탐구 활동지가 없습니다.<br>카드의 "이 질문으로 탐구 시작" 버튼을 눌러 작성해보세요.</div>';
+    return;
+  }
+  wrap.innerHTML = all.map((ws,i)=>`
+    <div class="saved-item">
+      <div class="si-top">
+        <div class="si-title">${esc(ws.cardTitle)} · ${esc(ws.level)}(${esc(ws.subject)})</div>
+        <div class="si-tag">${esc(ws.savedAt)}</div>
+      </div>
+      <div class="si-q">${esc(ws.question)}</div>
+      <div class="si-actions">
+        <button onclick="loadSaved(${i})">불러오기</button>
+        <button onclick="deleteSaved(${i})">삭제</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let loadedWS = null;
+function loadSaved(i){
+  let all = [];
+  try{ all = JSON.parse(localStorage.getItem('pe_math_worksheets') || '[]'); }catch(e){ all = []; }
+  const ws = all[i];
+  if(!ws) return;
+  loadedWS = ws;
+  currentWS = null;
+  document.getElementById('wsTitle').textContent = '탐구 활동지 (불러옴)';
+  document.getElementById('wsMeta').textContent = `${ws.cardTitle} (${ws.cardMeta}) · ${ws.level} · ${ws.subject}`;
+  document.getElementById('wsQuestion').textContent = ws.question;
+  document.getElementById('wsName').value = ws.name || '';
+  document.getElementById('wsHypothesis').value = ws.hypothesis || '';
+  document.getElementById('wsMethod').value = ws.method || '';
+  document.getElementById('wsResearch').value = ws.research || '';
+  document.getElementById('wsConclusion').value = ws.conclusion || '';
+  document.getElementById('wsExtra').value = ws.extra || '';
+  closeModal('savedModal');
+  openModal('worksheetModal');
+}
+function deleteSaved(i){
+  let all = [];
+  try{ all = JSON.parse(localStorage.getItem('pe_math_worksheets') || '[]'); }catch(e){ all = []; }
+  all.splice(i,1);
+  localStorage.setItem('pe_math_worksheets', JSON.stringify(all));
+  renderSavedList();
+}
+
+/* override save when editing a loaded worksheet */
+const _origSave = saveWorksheet;
+saveWorksheet = function(){
+  if(currentWS){ _origSave(); return; }
+  if(loadedWS){
+    let all = [];
+    try{ all = JSON.parse(localStorage.getItem('pe_math_worksheets') || '[]'); }catch(e){ all = []; }
+    const idx = all.findIndex(w=>w.id === loadedWS.id);
+    const updated = Object.assign({}, loadedWS, {
+      name: document.getElementById('wsName').value,
+      hypothesis: document.getElementById('wsHypothesis').value,
+      method: document.getElementById('wsMethod').value,
+      research: document.getElementById('wsResearch').value,
+      conclusion: document.getElementById('wsConclusion').value,
+      extra: document.getElementById('wsExtra').value,
+      savedAt: new Date().toLocaleString('ko-KR')
+    });
+    if(idx >= 0){ all[idx] = updated; } else { all.unshift(updated); }
+    localStorage.setItem('pe_math_worksheets', JSON.stringify(all));
+    loadedWS = updated;
+    alert('수정 내용이 저장되었습니다.');
+  }
+};
+
+/* ---------------- Presentation ---------------- */
+let presentSlides = [];
+let presentIdx = 0;
+
+function openPresent(){
+  const data = collectFormDataSafe();
+  if(!data) return;
+  presentSlides = [
+    {label:'탐구 장면', text:`${data.cardTitle}\n(${data.cardMeta})`},
+    {label:`탐구 질문 — ${data.level} · ${data.subject}`, text:data.question},
+    {label:'① 가설', text:data.hypothesis || '(작성 전)'},
+    {label:'② 탐구 방법', text:data.method || '(작성 전)'},
+    {label:'③ 조사 내용', text:data.research || '(작성 전)'},
+    {label:'④ 결론 및 정리', text:data.conclusion || '(작성 전)'},
+    {label:'⑤ 더 궁금한 점', text:data.extra || '(작성 전)'}
+  ];
+  presentIdx = 0;
+  document.getElementById('ptTitle').textContent = data.name ? `${data.name}의 탐구 발표` : '탐구 발표';
+  renderPresentSlide();
+  openModal2('presentView');
+}
+function collectFormDataSafe(){
+  if(currentWS) return collectFormData();
+  if(loadedWS) return Object.assign({}, loadedWS, {
+    name: document.getElementById('wsName').value,
+    hypothesis: document.getElementById('wsHypothesis').value,
+    method: document.getElementById('wsMethod').value,
+    research: document.getElementById('wsResearch').value,
+    conclusion: document.getElementById('wsConclusion').value,
+    extra: document.getElementById('wsExtra').value
+  });
+  return null;
+}
+function openModal2(id){ document.getElementById(id).classList.add('active'); }
+function closePresent(){ document.getElementById('presentView').classList.remove('active'); }
+
+function renderPresentSlide(){
+  const s = presentSlides[presentIdx];
+  document.getElementById('psLabel').textContent = s.label;
+  document.getElementById('psText').textContent = s.text;
+  const dots = document.getElementById('psDots');
+  dots.innerHTML = presentSlides.map((_,i)=>`<span class="${i===presentIdx?'on':''}"></span>`).join('');
+}
+function presentStep(dir){
+  presentIdx = (presentIdx + dir + presentSlides.length) % presentSlides.length;
+  renderPresentSlide();
+}
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('presentView').classList.contains('active')) return;
+  if(e.key === 'ArrowRight') presentStep(1);
+  if(e.key === 'ArrowLeft') presentStep(-1);
+  if(e.key === 'Escape') closePresent();
+});
+
+/* close modal on backdrop click */
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target === m) m.classList.remove('active'); });
+});
+
+init();
+</script>
+</body>
+</html>
